@@ -10,7 +10,7 @@ I'm using [this guide](https://www.perl.com/pub/2000/10/begperl1.html/) from
 `hello_world.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 print "Hello World!\n";
 ```
 
@@ -24,7 +24,7 @@ One of the most common functions in perl is the print function.
 `print_examples.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 print "This is a single statement.\n";
 print "This ", "is ", "a ", "list!";
 ```
@@ -36,7 +36,7 @@ on one line or a single statement can be split across multiple lines.
 `statement_example.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 print "This is two statements "; print "on one line.\n";
 print "This is one statement ",
 	"on two lines.\n";
@@ -65,7 +65,7 @@ character sequences such as \n are converted to their non-ascii meaning.
 `single_vs_double_quotes.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 print 'Hello there!\n';
 print "Hello there!\n";
 ```
@@ -83,7 +83,7 @@ scalar begins with a dollar sign, like the variable names in bash.
 `scalars.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 $i = 5;
 $pie_flavor = 'apple';
@@ -133,7 +133,7 @@ separated by commas.
 `arrays.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 @summer_months = ("June", "July", "August");
 ```
 
@@ -178,7 +178,7 @@ index contains two elements.
 `dictionaries.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 %days_in_month = ( "June" => 30, "July" => 31, "August" => 31 );
 ```
 
@@ -203,13 +203,13 @@ values.
 
 `<`, `>`, `==`, `!=`, `<=`, & `>=`
 
-These compairson operators can either return true or false.
+These comparison operators can either return true or false.
 
 ## Conditional Statements 
 
 Conditional statements form much of the core logic of perl. They are related to
 comparison operators, as the test case inside of the conditionals parenthesis
-often involves compairison operators. However, conditionals can be used to test
+often involves comparison operators. However, conditionals can be used to test
 anything that returns either true or false.
 
 ### If Statements
@@ -219,7 +219,7 @@ The simplest conditional statement is the `if` statement.
 `conditionals.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 $a = 1000;
 
@@ -241,9 +241,9 @@ statement is triggered whenever the test inside of the conditional parenthesis
 fails.
 
 ```
-$bank_ballance = 0;
+$bank_balance = 0;
 
-unless ($bank_ballance > 0){
+unless ($bank_balance > 0){
 	print "I'm broke!\n";
 }
 ```
@@ -276,7 +276,7 @@ Greater than or equal respectively.
 `string_compare.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 $a = "blah";
 $b = "fart";
@@ -289,7 +289,7 @@ if ($b ne $a) {
 	print "Strings are not the same.\n";
 }
 
-# The lt, gt, le and ge operators compare by alphebetical order. The string
+# The lt, gt, le and ge operators compare by alphabetical order. The string
 # blah starts with a 'b' so it is *less than* fart which starts with an 'f'.
 # Think which one is further down along the alphabet.
 if ($a lt $b) {
@@ -311,26 +311,97 @@ if ($a ge "blag") {
 
 ```
 
+## Sting Functions
+
+Perl has a few built in functions that we can use to manipulate strings. 
+
+`string_functions.pl`
+
+```
+#!/usr/bin/env perl
+
+# substr(), split() and join()
+
+$a = "With a duffel full of troubles, trunk rattle in the Mazda!\n";
+$b = "I'm tryna live to ninety-three and see the old me\n";
+$c = "Pop through your bubble vest or double-breasted\n";
+```
+
+### Substr()
+
+The `substr()` function is used to retrieve part of a string. It accepts either
+two or three arguments. The first argument is the string itself. The second
+argument is the character position in the string where you want to start your
+substring. The optional third argument is the number of chars you want to grab
+after the start of the substring. If the third arg is omitted substr() will
+grab to the end of the string.
+ 
+```
+print $a; 
+print substr($a, 0, 13);    # With a duffel full
+print "\n";
+print substr($a, 14, 18);   # full of troubles,
+print "\n";
+print substr($a, 32);       # trunk rattle in the Mazda
+```
+
+You can also use the substr() function with a negative index start point to
+grab from the end of the line. For example,
+
+```
+# Negative index
+print substr($a, -6);        # Mazda
+```
+
+### Split()
+
+The `split()` function allows you to take one string and spit it into many
+according to a regex delimiter. We haven't gone over regex yet so for now we'll
+just be using a space as the delimiter.
+
+```
+print $b; 
+@b = split(/ /, $b);    # Array with containing words of $b string.
+print "@b[2..4]\n";     # Range of words in now @b array.
+print "@b[5..9]";       # Range of words in now @b array.
+```
+
+### Join()
+
+The last string function to touch on is join(). Join() takes an array and
+re-stringifies it according to two supplied parameters. The first argument is
+the string or character that should connect the items of the array when strung
+back together. Typically this will be a space for words in a sentence but it
+can be any string. 
+
+```
+print $c; 
+print join(' ', @c);
+print join('-', @c);
+print join(' blah ', @c[0..2]);
+print "\n";
+```
+
 ## Loops
 
 Perl, like any modern programming language, has loops. 
 
 ### For Loops
 
-One of the most usful loops in perl is the for loop. A for loop iterates over
+One of the most useful loops in perl is the for loop. A for loop iterates over
 an array of data runs the same code over and over again until its reached the
 end of the list.
 
 `forloops.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 for $i (1, 2, 3, 4, 5){
 	print "$i\n";
 }
 ```
 
-The above code prints the numbers 1 through 5 on seperate lines.
+The above code prints the numbers 1 through 5 on separate lines.
 
 You can use `..` as shorthand for x through y.
 
@@ -373,7 +444,7 @@ Similar to the while loop is the `until` loop. In perl, the until loop runs
 `while_and_until_loops.pl`
 
 ```
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 $a = 0;
 
@@ -390,12 +461,119 @@ until ($a == 0) {
 }
 ```
 
+## File Input / Output
 
+### Reading from Files
 
+The `open()` function is the tool used in perl to directly interact with the
+computer's file system. Open() can be used to read from files and to write to
+files. We'll cover writing to files in a bit. Open() takes two arguments, the
+filehandle you want to use and the second it the name of the file.
 
+We'll be using a sample logfile.
 
+`log.txt`
 
+```
+Cool Program Log File
+01/14/22 04:23:25 - Checking program coolness... 
+01/14/22 04:23:27 - Cool program verfied!
+01/14/22 04:23:28 - Calculating program dopeness...
+01/14/22 04:23:30 - Certified dope software!
+01/14/22 04:23:31 - Validating legitness...
+01/14/22 04:23:32 - Super legit, best software!
+```
 
+`filehandles.pl`
+
+```
+#!/usr/bin/env perl
+
+open (LOGFILE, "log.txt");
+```
+
+In perl a filehandle is a construct used to manipulate a file. It can be
+different things depending on the way its called. For example, if called as a
+scalar the LOGFILE filehandle will become a string containing the first line of
+log.txt. Whereas, if called as an iterable the LOGFILE filehandle will come to
+represent an array with the individual lines of the file being the elements of
+the array. Filehandles in perl are always referenced between `<>` characters
+
+```
+$title = <LOGFILE>;
+
+$i=0;
+
+for $line (<LOGFILE>) {
+    @logfile[$i] = $line;
+    $i++;
+}
+
+print "Log Title:\n$title";
+
+print "Log Contents:\n";
+print @logfile;
+
+close LOGFILE;
+```
+
+After we're done using a filehandle, its good practice to close it. We do so
+using the `close` statement.
+
+### Writing to File
+
+We can also use `open()` to write to files. Just like in the shell, there are
+two write modes, overwrite and append, represented by the `>` and `>>`
+characters respectivly.
+
+`filewrite.pl`
+
+```
+#!/usr/bin/env perl
+
+$a = "Rhymes is chosen like the weapons of war\n";
+
+open (FILE1, ">file1.txt") or die "No";
+open (FILE2, ">>file2.txt") or die "No";
+
+print FILE1 "$a";
+
+print FILE2 "$a";
+
+close FILE1;
+close FILE2;                          
+```
+
+The two files produced by the above script will be identical the first time the
+program is ran. However, if run multiple times you'll see the $a string is
+appended to the end of file2.txt whereas with file1.txt its overwritten every
+time.
+
+* Quick cleanup: `rm file*txt`
+
+## Functions & Subs
+
+User defined functions in perl are created using the `sub` keyword. They work
+similar to the way functions work in many other languages. They can accept
+arguments and return values.
+
+`functions_aka_subs.pl`
+
+```
+#!/usr/bin/env perl
+
+sub square {
+	@ops = @_;
+	return $ops[0] * $ops[0];
+}
+
+for $i (1..10) {
+	print "$i squared is: ", &square($i), "\n";
+}
+```
+
+You might notice the `&` character before the sub's invocation. That's a legacy
+perl thing. If you see it anywhere that's what it means.
 
 
 

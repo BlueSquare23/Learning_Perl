@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 %days_in_month = ( "June" => 30, "July" => 31, "August" => 31 );
 

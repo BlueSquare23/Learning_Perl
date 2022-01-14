@@ -1,2 +1,2 @@
-#!/usr/local/bin/perl
-print "Hi there!\n";
+#!/usr/bin/env perl
+print "Hello World!\n";
