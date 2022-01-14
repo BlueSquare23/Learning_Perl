@@ -5,9 +5,17 @@ This is a series of notes and scripts I've taken while trying to learn Perl.
 I'm using [this guide](https://www.perl.com/pub/2000/10/begperl1.html/) from
 [perl.com](https://www.perl.com/) as a starting point.
 
+The example programs live in the Examples sub directory. Each one of those
+scripts is independantly executable. Much of that code is borrowed from the
+above guide and only slightly altered.
+
+To see Perl code I've written myself check in the Exercises directory. Within
+that folder are a number of perl programs I've written as tests to help me get
+better at writing perl.
+
 ## First Program
 
-`hello_world.pl`
+`Examples/hello_world.pl`
 
 ```
 #!/usr/bin/env perl
@@ -21,7 +29,7 @@ all functions accept a comma-separated list of arguments.
 
 One of the most common functions in perl is the print function.
 
-`print_examples.pl`
+`Examples/print_examples.pl`
 
 ```
 #!/usr/bin/env perl
@@ -33,7 +41,7 @@ In perl, a *Statement* is any function + args terminated by a semicolon.
 Statements don’t need to be on separate lines; there may be multiple statements
 on one line or a single statement can be split across multiple lines.
 
-`statement_example.pl`
+`Examples/statement_example.pl`
 
 ```
 #!/usr/bin/env perl
@@ -62,7 +70,7 @@ Whereas, strings within double quotes are interpreted, meaning special
 character sequences such as \n are converted to their non-ascii meaning.
 
 
-`single_vs_double_quotes.pl`
+`Examples/single_vs_double_quotes.pl`
 
 ```
 #!/usr/bin/env perl
@@ -80,7 +88,7 @@ Perl has three types of variables: scalars, arrays and hashes. Think of them as
 Scalars are a single value. They can be a number or a string. The name of a
 scalar begins with a dollar sign, like the variable names in bash.
 
-`scalars.pl`
+`Examples/scalars.pl`
 
 ```
 #!/usr/bin/env perl
@@ -130,7 +138,7 @@ In perl, an array is just a list of scalars. Array names always begin with the
 `@` character. You define arrays by listing their contents in parentheses,
 separated by commas.
 
-`arrays.pl`
+`Examples/arrays.pl`
 
 ```
 #!/usr/bin/env perl
@@ -175,7 +183,7 @@ Dictionary definitions are prefixed by the `%` character. The key value pairs
 in a hash table are defined by comma-separated list. Like an array where each
 index contains two elements.
 
-`dictionaries.pl`
+`Examples/dictionaries.pl`
 
 ```
 #!/usr/bin/env perl
@@ -216,7 +224,7 @@ anything that returns either true or false.
 
 The simplest conditional statement is the `if` statement.
 
-`conditionals.pl`
+`Examples/conditionals.pl`
 
 ```
 #!/usr/bin/env perl
@@ -273,7 +281,7 @@ operators. The following are the string comparison operators in perl.
 These mean Equal, Not Equal, Less than, Greater than, Less than or equal, and
 Greater than or equal respectively.
 
-`string_compare.pl`
+`Examples/string_compare.pl`
 
 ```
 #!/usr/bin/env perl
@@ -315,7 +323,7 @@ if ($a ge "blag") {
 
 Perl has a few built in functions that we can use to manipulate strings. 
 
-`string_functions.pl`
+`Examples/string_functions.pl`
 
 ```
 #!/usr/bin/env perl
@@ -392,7 +400,7 @@ One of the most useful loops in perl is the for loop. A for loop iterates over
 an array of data runs the same code over and over again until its reached the
 end of the list.
 
-`forloops.pl`
+`Examples/forloops.pl`
 
 ```
 #!/usr/bin/env perl
@@ -441,7 +449,7 @@ execute the code in the loop body.
 Similar to the while loop is the `until` loop. In perl, the until loop runs
 *until* a certain condition is true.
 
-`while_and_until_loops.pl`
+`Examples/while_and_until_loops.pl`
 
 ```
 #!/usr/bin/env perl
@@ -472,7 +480,7 @@ filehandle you want to use and the second it the name of the file.
 
 We'll be using a sample logfile.
 
-`log.txt`
+`Examples/log.txt`
 
 ```
 Cool Program Log File
@@ -484,7 +492,7 @@ Cool Program Log File
 01/14/22 04:23:32 - Super legit, best software!
 ```
 
-`filehandles.pl`
+`Examples/filehandles.pl`
 
 ```
 #!/usr/bin/env perl
@@ -526,7 +534,7 @@ We can also use `open()` to write to files. Just like in the shell, there are
 two write modes, overwrite and append, represented by the `>` and `>>`
 characters respectivly.
 
-`filewrite.pl`
+`Examples/filewrite.pl`
 
 ```
 #!/usr/bin/env perl
@@ -557,7 +565,7 @@ User defined functions in perl are created using the `sub` keyword. They work
 similar to the way functions work in many other languages. They can accept
 arguments and return values.
 
-`functions_aka_subs.pl`
+`Examples/functions_aka_subs.pl`
 
 ```
 #!/usr/bin/env perl
