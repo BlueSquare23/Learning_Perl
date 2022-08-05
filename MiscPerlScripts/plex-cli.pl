@@ -56,10 +56,6 @@ pod2usage(1) if $HELP;
 
 my $API_ENDPOINT = "http://localhost:32400";
 my $PLEX_TOKEN   = "YOUR_PLEX_TOKEN";
-chomp($PLEX_TOKEN);
-if (! $PLEX_TOKEN){
-	print "No Token Found!";
-}
 
 sub get_library_id_hashmap {
 	my $url = $API_ENDPOINT . "/library/sections?X-Plex-Token=" . $PLEX_TOKEN;
