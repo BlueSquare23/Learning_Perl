@@ -125,9 +125,11 @@ if ($LIST_LIBRARIES){
 
 		my $summary  = $video_stream->findvalue('./@summary');
 		my @summary  = split(/ /, $summary);
-		my @short_summary = @summary[0..14];
-		push(@short_summary, "\b...");
-		$summary = join(" ", @short_summary);
+		if (@summary){
+			my @short_summary = @summary[0..14];
+			push(@short_summary, "\b...");
+			$summary = join(" ", @short_summary);
+		}
 		
 		# Ternary ops ftw.
 		print $username  ? "  User:        $username\n"  : "";
