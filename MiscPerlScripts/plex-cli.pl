@@ -125,8 +125,8 @@ if ($LIST_LIBRARIES){
 
 		my $summary  = $video_stream->findvalue('./@summary');
 		my @summary  = split(/ /, $summary);
-		if (@summary){
-			my @short_summary = @summary[0..14];
+		if (scalar @summary > 12){
+			my @short_summary = @summary[0..12];
 			push(@short_summary, "\b...");
 			$summary = join(" ", @short_summary);
 		}
