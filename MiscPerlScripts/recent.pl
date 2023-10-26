@@ -64,9 +64,9 @@ while (my $line = <$fh>) {
     next unless $line =~ /GET|POST|OPTIONS|HEAD|PUT/;
     my @line_arr = split / /, $line;
 
-    &check_and_increment_hash($line_arr[0], \%TOP_IPS);
-    &check_and_increment_hash($line_arr[1], \%TOP_DOMS);
-    &check_and_increment_hash($line_arr[7], \%TOP_PATHS);
+    $TOP_IPS{$line_arr[0]}++;
+    $TOP_DOMS{$line_arr[1]}++;
+    $TOP_PATHS{$line_arr[7]}++;
 }
 
 close ($fh);
@@ -82,19 +82,6 @@ print "\n";
 exit;
 
 # Subs.
-
-# Check if item already in hash.
-# If so increments occurrence of item.
-# If not, adds item to hash.
-sub check_and_increment_hash {
-    my ($item, $hash) = @_;
-
-    if (exists($hash->{$item})) {
-        $hash->{$item}++;
-    } else {
-        $hash->{$item} = 1;
-    }
-}
 
 # Sort's hashes by value using a hash slice.
 # https://stackoverflow.com/questions/10901084/how-can-i-sort-a-perl-hash-on-values-and-order-the-keys-correspondingly-in-two
