@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-# Johns Awesome Perl Quine!
+# John's Awesome Perl Quine!
 
 my $source_str = <<'EOF';
 #!/usr/bin/env perl
-# Johns Awesome Perl Quine!
+# John's Awesome Perl Quine!
 
 my $source_str = <<'EOF';
 xEOF
