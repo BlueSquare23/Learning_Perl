@@ -62,17 +62,17 @@ while (my $line = <$fh>) {
     next unless $line =~ /GET|POST|OPTIONS|HEAD|PUT/;
     my @line_arr = split / /, $line;
 
-    $TOP_IPS{$line_arr[0]}++;
-    $TOP_DOMS{$line_arr[1]}++;
+    $TOP_IPS{$line_arr[1]}++;
+    $TOP_DOMS{$line_arr[0]}++;
     $TOP_PATHS{$line_arr[7]}++;
 }
 
 close ($fh);
 
-print "\n\t### Top IPs\n\n";
-&sort_items(\%TOP_IPS);
 print "\n\t### Top Domains\n\n";
 &sort_items(\%TOP_DOMS);
+print "\n\t### Top IPs\n\n";
+&sort_items(\%TOP_IPS);
 print "\n\t### Top Requested Paths\n\n";
 &sort_items(\%TOP_PATHS);
 print "\n";
