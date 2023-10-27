@@ -8,13 +8,16 @@ use warnings;
 
     recent.pl - Lists recent domains and IPs from the Apache access logs.
 
-=head1 DESCRIPTION
+=head1 OPTIONS
  
     Usage: recent.pl [options]
  
     Options (Defaults):
         num_lines = -1          Tail number of log lines (-1 = all lines)
         num_results = 10        Number of results printed
+
+    Options (Additional):
+        ignore [string]         Log lines with this string will be omitted
 =cut
 
 use Data::Dumper;
@@ -32,7 +35,8 @@ my %O = (
 GetOptions(\%O,
     'help',
     'num_lines=i',
-    'num_results=i') or die();
+    'num_results=i',
+    'ignore=s') or die();
 
 pod2usage(-verbose => 2, -noperldoc => 1) if $O{help};
 
@@ -45,7 +49,7 @@ my %TOP_PATHS;
 
 my $ACCESS_LOG = '/var/log/apache2/access.log';
 my $TMP_LOG = '/tmp/tmp.log'; # Hacky short term solution.
-my $LOG = $ACCESS_LOG; # Default to whole log.
+my $LOG = $ACCESS_LOG; # Default to whole access log.
 
 # If num_lines specified, tail that man lines from access.log.
 if ($O{num_lines} >= 0) {
@@ -60,6 +64,9 @@ while (my $line = <$fh>) {
     chomp $line;
     # Ignore lines without a valid request type.
     next unless $line =~ /GET|POST|OPTIONS|HEAD|PUT/;
+    if ($O{ignore}) {
+        next if $line =~ /$O{ignore}/;
+    }
     my @line_arr = split / /, $line;
 
     $TOP_IPS{$line_arr[1]}++;
