@@ -43,20 +43,18 @@ my %TOP_IPS;
 my %TOP_DOMS;
 my %TOP_PATHS;
 
-my $access_log = '/var/log/apache2/access.log';
-my $tmp_log = '/tmp/tmp.log'; # Hacky short term solution.
-my $log;
+my $ACCESS_LOG = '/var/log/apache2/access.log';
+my $TMP_LOG = '/tmp/tmp.log'; # Hacky short term solution.
+my $LOG = $ACCESS_LOG; # Default to whole log.
 
-# If negative (default), do the whole log.
-if ($O{num_lines} < 0) {
-    $log = $access_log;
-} else {
-    system("tail -$O{num_lines} $access_log > $tmp_log");
-    $log = $tmp_log;
+# If num_lines specified, tail that man lines from access.log.
+if ($O{num_lines} >= 0) {
+    system("tail -$O{num_lines} $ACCESS_LOG > $TMP_LOG");
+    $LOG = $TMP_LOG;
 }
 
-open(my $fh, '<:encoding(UTF-8)', $log)
-    or die "Could not open file '$log' $!";
+open(my $fh, '<:encoding(UTF-8)', $LOG)
+    or die "Could not open file '$LOG' $!";
 
 while (my $line = <$fh>) {
     chomp $line;
