@@ -25,16 +25,16 @@ sub usage {
       Usage:
           shotgun.pl [options]
       
-      Options (required):
+      Options (required, at least one):
           -target                   File you want to shoot holes in
-        or
           -reload                   Reload magazine file
+          -check                    Check the mag
 
       Options (optional):
           -help                     Print this help menu
           -type [double|pump]       Shotgun type
           -load [bird|buck|slug]    Type of ammunition
-          -shots [int]              Number of shots to fire
+          -shots [int]              Number of shots to fire or load
           -debug                    Debug mode, takes no action
           -verbose                  Verbose mode, more verbose output
 
@@ -53,6 +53,7 @@ my %O = (
     verbose => 1,
     type => 'double',
     load => 'bird',
+    brooklyn => 1,
 );
 
 GetOptions(\%O,
@@ -64,20 +65,18 @@ GetOptions(\%O,
     'load=s',
     'shots=i',
     'reload',
+    'check',
+    'brooklyn!',
 ) or usage();
 
-# Sanity checks.
-usage("Missing required argument!") unless $O{target} or $O{reload};
-usage() if $O{help};
 $O{verbose}++ if $O{debug};
+
+# Sanity checks.
+usage() if $O{help};
+usage("Missing required argument!") unless $O{target} or $O{reload} or $O{check};
 
 usage("Invalid shotgun type!") unless($O{type} =~ /double|pump/);
 usage("Invalid ammo type!") unless($O{load} =~ /bird|buck|slug/);
-
-reload() if $O{reload};
-exit unless $O{target};
-die("Target file must be under 1 GB!") if -s $O{target} > 1024 * 1024;
-die("Target file must be plain text!") if -f $O{target};
 
 unless (-e $MAG_FILE) {
     print "Mag file not found, reloading...\n" if $O{verbose};
@@ -86,6 +85,13 @@ unless (-e $MAG_FILE) {
 }
 
 my $MAG = read_json($MAG_FILE) or die("Problem reading mag file!");
+
+reload() if $O{reload};
+check() if $O{check};
+exit unless $O{target};
+die("Target file does not exits!") unless -e $O{target};
+die("Target file must be plain text!") unless -f $O{target};
+die("Target file must be under 1 GB!") if -s $O{target} > (1024 * 1024);
 
 unless ($MAG->{$O{type}}) {
     print "Mag for $O{type} not loaded, you'll need to reload!\n";
@@ -117,19 +123,53 @@ sub reload {
     );
     my %full_load = ($O{type} => \%load);
     write_json($MAG_FILE, \%full_load);
-    print "Shotgun reloaded!\n" if $O{verbose};
+    print "Shotgun reloaded!\n";
+    check() if $O{verbose};
 }
 
 sub shoot {
     return if $O{debug};
+    my @lines = read_file($O{target});
 
-   # my @lines = read_file($O{target});
-   # foreach $line (@lines) {
-   #     
-   # }
+    # We're only going to work in this space. So text in column 81 is safe from
+    # the shotgun's blast, for now...
+    my $height = @lines;
+    my $width = 80;
+
+    my $v_buffer = int rand($height);
+    my $h_buffer = int rand($width);
+
+    my $v_spread = 7;
+    my $h_spread = 13;
+
+#    my ($v, $h) = (0) x 2;
+
+    for (my $v=0; $v < $v_spread; $v++) {
+        print $v . "\n";
+        my $v_offset = $v_buffer + $v;
+        last if $v_offset >= $height;
+        my @line = split '', $lines[$v_offset];
+        for (my $h=0; $h < $h_spread; $h++) {
+            my $h_offset = $h_buffer + $h;
+            last if $h_offset > @line;
+            last if $line[$h_offset] eq "\n";
+            $line[$h_offset] = " ";
+        }
+        $lines[$v_offset] = join('', @line);
+    }
+
+    open my $fh, '>', $O{target} or die("Unable to open target file!");
+    foreach (@lines) {
+        print $fh $_;
+    }
+    close $fh;
 
     # For dramatic effect.
-    sleep(1);
+    sleep(1) if $O{brooklyn};
     print "POW!\n";
 }
 
+sub check {
+    $MAG = read_json($MAG_FILE) or die("Problem reading mag file!");
+    print JSON->new->ascii->pretty->encode($MAG);
+}
