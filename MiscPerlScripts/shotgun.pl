@@ -117,10 +117,12 @@ sub reload {
     my $num_rounds = 2;
     $num_rounds = 5 if $O{type} eq 'pump';
     $num_rounds = $O{shots} if $O{shots} and $O{shots} < $num_rounds;
+
     my %load = (
         'num_rounds' => $num_rounds,
         'load' => $O{load},
     );
+
     my %full_load = ($O{type} => \%load);
     write_json($MAG_FILE, \%full_load);
     print "Shotgun reloaded!\n";
@@ -131,8 +133,7 @@ sub shoot {
     return if $O{debug};
     my @lines = read_file($O{target});
 
-    # We're only going to work in this space. So text in column 81 is safe from
-    # the shotgun's blast, for now...
+    # We're only going to work in this space. 
     my $height = @lines;
     my $width = 80;
 
@@ -142,18 +143,35 @@ sub shoot {
     my $v_spread = 7;
     my $h_spread = 13;
 
-#    my ($v, $h) = (0) x 2;
-
     for (my $v=0; $v < $v_spread; $v++) {
-        print $v . "\n";
         my $v_offset = $v_buffer + $v;
+
         last if $v_offset >= $height;
         my @line = split '', $lines[$v_offset];
+
         for (my $h=0; $h < $h_spread; $h++) {
             my $h_offset = $h_buffer + $h;
-            last if $h_offset > @line;
+
+            # Belt and suspenders.
+            last if $h_offset >= @line;
             last if $line[$h_offset] eq "\n";
-            $line[$h_offset] = " ";
+
+            if ($O{load} eq 'buck') {
+                my @buck = ([6,7], [1,2,6,7], [1,2,11,12], [6,7,11,12], [1,2,6,7], [1,2,9,10], [9,10]);
+                for my $holes ($buck[$v]) {
+                    $line[$h_offset] = " " if grep {$_ == $h} @$holes;
+                }
+            } elsif ($O{load} eq 'slug') {
+                my @slug = ([5,6,7], [5,6]);
+                for my $holes ($slug[$v]) {
+                    $line[$h_offset] = " " if grep {$_ == $h} @$holes;
+                }
+            } else {
+                my @bird = ([6], [3,9], [6], [3], [1,6,10], [4], [0,7]);
+                for my $holes ($bird[$v]) {
+                    $line[$h_offset] = " " if grep {$_ == $h} @$holes;
+                }
+            }
         }
         $lines[$v_offset] = join('', @line);
     }
@@ -173,3 +191,4 @@ sub check {
     $MAG = read_json($MAG_FILE) or die("Problem reading mag file!");
     print JSON->new->ascii->pretty->encode($MAG);
 }
+
