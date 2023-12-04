@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use lib 'perl5/lib/perl5';
+use lib "$ENV{HOME}/perl5/lib/perl5";
 use Getopt::Long;
 use File::Slurp qw(read_file);
 use File::JSON::Slurper qw(read_json write_json);
@@ -14,6 +14,9 @@ use IPC::Cmd 'run_forked';
 use String::ShellQuote;
 use Data::Dumper;
 use JSON;
+
+# Change as needed. Tested and should work with `aplay` and `mpv` on Ubuntu.
+my $AUDIO_PLAYER = '/usr/bin/mpv';
 
 sub usage {
     my $err_msg = shift;
@@ -35,6 +38,7 @@ sub usage {
           -type [double|pump]       Shotgun type
           -load [bird|buck|slug]    Type of ammunition
           -shots [int]              Number of shots to fire or load
+          -quiet                    Mute sound effect
           -debug                    Debug mode, takes no action
           -verbose                  Verbose mode, more verbose output
 
@@ -53,7 +57,6 @@ my %O = (
     verbose => 1,
     type => 'double',
     load => 'bird',
-    brooklyn => 1,
 );
 
 GetOptions(\%O,
@@ -66,10 +69,11 @@ GetOptions(\%O,
     'shots=i',
     'reload',
     'check',
-    'brooklyn!',
+    'quiet',
 ) or usage();
 
 $O{verbose}++ if $O{debug};
+$O{verbose} =  0 if $O{quiet};
 
 # Sanity checks.
 usage() if $O{help};
@@ -84,14 +88,14 @@ unless (-e $MAG_FILE) {
     reload();
 }
 
-my $MAG = read_json($MAG_FILE) or die("Problem reading mag file!");
-
 reload() if $O{reload};
 check() if $O{check};
 exit unless $O{target};
 die("Target file does not exits!") unless -e $O{target};
 die("Target file must be plain text!") unless -f $O{target};
 die("Target file must be under 1 GB!") if -s $O{target} > (1024 * 1024);
+
+my $MAG = read_json($MAG_FILE) or die("Problem reading mag file!");
 
 unless ($MAG->{$O{type}}) {
     print "Mag for $O{type} not loaded, you'll need to reload!\n";
@@ -125,6 +129,12 @@ sub reload {
 
     my %full_load = ($O{type} => \%load);
     write_json($MAG_FILE, \%full_load);
+    unless ($O{quiet}) {
+        for (my $i = 0; $i < $num_rounds; $i++) {
+            print "Loading shot $i\n" if $O{verbose};
+            run_forked(join(" ", $AUDIO_PLAYER, "$O{type}_reload.wav"));
+        }
+    }
     print "Shotgun reloaded!\n";
     check() if $O{verbose};
 }
@@ -143,6 +153,7 @@ sub shoot {
     my $v_spread = 7;
     my $h_spread = 13;
 
+    my $r = int rand(3);
     for (my $v=0; $v < $v_spread; $v++) {
         my $v_offset = $v_buffer + $v;
 
@@ -157,23 +168,69 @@ sub shoot {
             last if $line[$h_offset] eq "\n";
 
             if ($O{load} eq 'buck') {
-                my @buck = ([6,7], [1,2,6,7], [1,2,11,12], [6,7,11,12], [1,2,6,7], [1,2,9,10], [9,10]);
-                for my $holes ($buck[$v]) {
-                    $line[$h_offset] = " " if grep {$_ == $h} @$holes;
-                }
+                my %pattern0 = (0=>[6,7],
+                             1=>[1,2,6,7],
+                             2=>[1,2,11,12],
+                             3=>[6,7,11,12],
+                             4=>[1,2,6,7],
+                             5=>[1,2,9,10],
+                             6=>[9,10]);
+                my %pattern1 = (0=>[1,2,9,10],
+                             1=>[1,2,9,10],
+                             2=>[5,6],
+                             3=>[1,5,6,10,11],
+                             4=>[1,2,10,11],
+                             5=>[6,7],
+                             6=>[6,7]);
+                my %pattern2 = (0=>[5,6,7],
+                             1=>[1,2,6,10,11],
+                             2=>[1,2,10,11],
+                             3=>[5,6,7],
+                             4=>[1,2,6],
+                             5=>[1,2,10],
+                             6=>[9,10]);
+                my %buck = (0 => \%pattern0,
+                            1 => \%pattern1,
+                            2 => \%pattern2);
+
+                $line[$h_offset] = " " if grep {$_ == $h} @{$buck{$r}->{$v}};
             } elsif ($O{load} eq 'slug') {
-                my @slug = ([5,6,7], [5,6]);
-                for my $holes ($slug[$v]) {
-                    $line[$h_offset] = " " if grep {$_ == $h} @$holes;
-                }
+                my %pattern0  = (0=>[5,6,7], 1=>[5,6]);
+                my %pattern1 = (0=>[5,6], 1=>[5,6,7]);
+                my %pattern2 = (0=>[5,6], 1=>[4,5,6]);
+                my %slug = (0 => \%pattern0,
+                            1 => \%pattern1,
+                            2 => \%pattern2);
+                $line[$h_offset] = " " if grep {$_ == $h} @{$slug{$r}->{$v}};
             } else {
-                my @bird = ([6], [3,9], [6], [3], [1,6,10], [4], [0,7]);
-                for my $holes ($bird[$v]) {
-                    $line[$h_offset] = " " if grep {$_ == $h} @$holes;
-                }
+                my %pattern0 = (0=>[6],
+                                1=>[3,9],
+                                2=>[6],
+                                3=>[3],
+                                4=>[1,6,10],
+                                5=>[4],
+                                6=>[0,7]);
+                my %pattern1 = (0=>[6],
+                                1=>[3,9],
+                                2=>[6,11],
+                                3=>[3,7,9],
+                                4=>[6,10],
+                                5=>[4,9],
+                                6=>[7,11]);
+                my %pattern2 = (0=>[6,9],
+                                1=>[2,4,7],
+                                2=>[5,9],
+                                3=>[1,7],
+                                4=>[6],
+                                5=>[3,6,9],
+                                6=>[5]);
+                my %bird = (0 => \%pattern0,
+                            1 => \%pattern1,
+                            2 => \%pattern2);
+                $line[$h_offset] = " " if grep {$_ == $h} @{$bird{$r}->{$v}};
             }
+            $lines[$v_offset] = join('', @line);
         }
-        $lines[$v_offset] = join('', @line);
     }
 
     open my $fh, '>', $O{target} or die("Unable to open target file!");
@@ -183,8 +240,10 @@ sub shoot {
     close $fh;
 
     # For dramatic effect.
-    sleep(1) if $O{brooklyn};
+    print "POW!\n" and return if $O{quiet};
+    run_forked(join(" ", $AUDIO_PLAYER, "$O{type}.wav"));
     print "POW!\n";
+    run_forked(join(" ", $AUDIO_PLAYER, "shot.wav"));
 }
 
 sub check {
