@@ -50,6 +50,7 @@ GetOptions(\%O,
     'help',
     'list_saves',
     'load_save=i',
+    'new_game',
     'list_levels',
     'level=i',
     'debug'
@@ -60,31 +61,12 @@ usage() if ($O{help});
 
 &list_levels() if $O{list_levels};
 
+&print_banner();
+
 unless (-e $SAVE_FILE) {
     touch($SAVE_FILE);
-    print "Welcome to blind!\n";
-    print "Please enter a name for new save: ";
-    my $save_title = <STDIN>;
-    print "\n";
-    chomp $save_title;
-    my %new_game = (
-        saves => {
-            1 => {
-                save_title => $save_title,
-                level => 1,
-                check_point => 0,
-                stats => {
-                    health => 55,
-                    stamina => 30,
-                    vision => 0,
-                },
-                inventory => {
-                },
-            },
-        },
-    );
-    print Dumper \%new_game if $O{debug};
-    write_json($SAVE_FILE, \%new_game);
+    my %new_game = (saves => {});
+    &new_save(1, \%new_game);
 }
 
 my $SAVE_DATA = read_json($SAVE_FILE);
@@ -94,11 +76,16 @@ if ($O{list_saves}) {
     }
     exit;
 }
+if ($O{new_game}) {
+    my $new_save_num = (keys %{$SAVE_DATA->{saves}}) + 1;
+    $O{load_save} = $new_save_num;
+    &new_save($new_save_num, $SAVE_DATA);
+}
+
 my $SAVE = $SAVE_DATA->{saves}{$O{load_save}};
 die "Save number: $O{load_save} NOT found!\n" unless $SAVE;
 
 my $STATS = $SAVE->{stats};
-my $INVENTORY = $SAVE->{inventory};
 
 &level_one() if ($SAVE->{level} == 1);
 &level_two() if ($SAVE->{level} == 2);
@@ -113,15 +100,50 @@ sub list_levels {
     exit;
 }
 
-sub new_save {
-    my $save_num = shift;
+sub print_banner {
+    print <<~EOF;
+
+      ██████╗ ██╗     ██╗███╗   ██╗██████╗ 
+      ██╔══██╗██║     ██║████╗  ██║██╔══██╗
+      ██████╔╝██║     ██║██╔██╗ ██║██║  ██║
+      ██╔══██╗██║     ██║██║╚██╗██║██║  ██║
+      ██████╔╝███████╗██║██║ ╚████║██████╔╝
+      ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝╚═════╝ 
+         ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣤⣴⣤⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+         ⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⠿⠛⠋⠉⠁⠀⠀⠀⠈⠙⠻⢷⣦⡀⠀⠀⠀⠀⠀⠀
+         ⠀⠀⠀⠀⠀⣤⣾⡿⠋⠁⠀⣠⣶⣿⡿⢿⣷⣦⡀⠀⠀⠀⠙⠿⣦⣀⠀⠀⠀⠀
+         ⠀⠀⢀⣴⣿⡿⠋⠀⠀⢀⣼⣿⣿⣿⣶⣿⣾⣽⣿⡆⠀⠀⠀⠀⢻⣿⣷⣶⣄⠀
+         ⠀⣴⣿⣿⠋⠀⠀⠀⠀⠸⣿⣿⣿⣿⣯⣿⣿⣿⣿⣿⠀⠀⠀⠐⡄⡌⢻⣿⣿⡷
+         ⢸⣿⣿⠃⢂⡋⠄⠀⠀⠀⢿⣿⣿⣿⣿⣿⣯⣿⣿⠏⠀⠀⠀⠀⢦⣷⣿⠿⠛⠁
+         ⠀⠙⠿⢾⣤⡈⠙⠂⢤⢀⠀⠙⠿⢿⣿⣿⡿⠟⠁⠀⣀⣀⣤⣶⠟⠋⠁⠀⠀⠀
+         ⠀⠀⠀⠀⠈⠙⠿⣾⣠⣆⣅⣀⣠⣄⣤⣴⣶⣾⣽⢿⠿⠟⠋⠀⠀⠀⠀⠀⠀⠀
+         ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠛⠛⠙⠋⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    EOF
 }
 
-sub save_and_quit {
-    print "Saving Game & Quitting...\n";
+sub new_save {
+    my ($save_num, $saves_hash) = @_;
+    print "Please enter a name for new save: ";
+    my $save_title = <STDIN>;
+    print "\n";
+    chomp $save_title;
+    $saves_hash->{saves}{$save_num} = {
+        save_title => $save_title,
+        level => 1,
+        stats => {
+            health => 55,
+            stamina => 30,
+            vision => 0,
+        },
+    };
+    print Dumper $saves_hash if $O{debug};
+    write_json($SAVE_FILE, $saves_hash);
+}
+
+sub save_game {
     $SAVE_DATA->{saves}{$O{load_save}} = $SAVE;
     write_json($SAVE_FILE, $SAVE_DATA);
-    exit;
+    print "Game Progress Saved!\n";
 }
 
 sub get_action {
@@ -136,7 +158,7 @@ sub get_action {
     # Recurse if input is invalid!
     unless (exists $accepted_actions->{$action}) {
         print "Invalid input! Pick again!\n";
-        &get_action($accepted_actions);
+        return &get_action($accepted_actions);
     }
     return $action;
 }
@@ -196,7 +218,7 @@ sub jump_up {
         You manage to grab hold of what feels like a tree stump. But you are unable
         to get your arms around it.
 
-        After a few minutes of struggling you fall back into the hold hurting your
+        After a few minutes of struggling you fall back into the hole hurting your
         ankle on the way down.
 
         -15 Health
@@ -217,6 +239,10 @@ sub jump_up {
 
     After a few minutes of struggling you fall back into the hold hurting your
     ankle on the way down.
+
+    -15 Health
+    -15 Stamina
+    ---
     EOF
 }
 
@@ -261,6 +287,7 @@ sub splash_face {
     After a few moments you realize you can now open your eye lids slightly and
     see some light and shapes through them.
 
+    -5 Health
     +5 Stamina
     +10 Vision
     ---
@@ -283,7 +310,7 @@ sub throw_chain {
     EOF
 }
 
-sub climb_up {
+sub climb_out {
     print <<~EOF;
     ---
     You jump up and grab onto the chain as far up on it as you can get.
@@ -308,12 +335,36 @@ sub climb_up {
 
 sub l1_check_action {
     my ($action, $possible_options) = @_;
+
+    exit if ($action eq 'quit');
+    if ($action eq 'save') {
+        &save_game();
+        return 1
+    }
+
     if ($action eq 'cry') {
         $STATS->{health} -= 10;
         $STATS->{stamina} -= 5;
         $STATS->{vision} += 5;
         &cry();
     } 
+    
+    if ($action eq 'wait') {
+        $STATS->{health} -= 5;
+        $STATS->{stamina} += 5;
+        $STATS->{vision}++;
+        print <<~EOF;
+        ---
+        The bitter cold takes some health, but you regain some stamina.
+
+        Your eyes feel ever so slightly better.
+
+        -5 Health
+        +5 Stamina
+        +1 Vision
+        ---
+        EOF
+    }
 
     if ($action eq 'feel-around') {
         delete $possible_options->{'feel-around'};
@@ -323,7 +374,7 @@ sub l1_check_action {
     }
 
     if ($action eq 'jump-up') {
-        if ($INVENTORY->{chain} and $STATS->{vision} >= 15) {
+        if ($SAVE->{inventory}{chain} and $STATS->{vision} >= 15) {
             $possible_options->{'throw-chain'} = 1;
         }
         if ($STATS->{stamina} >= 15) {
@@ -341,8 +392,8 @@ sub l1_check_action {
     }
 
     if ($action eq 'open-backpack') {
-        $INVENTORY->{chain} = 1;
-        $INVENTORY->{water} = 1;
+        $SAVE->{inventory}{chain} = 1;
+        $SAVE->{inventory}{water} = 1;
         $possible_options->{'drink-water'} = 1;
         $possible_options->{'splash-face'} = 1;
         delete $possible_options->{'open-backpack'};
@@ -354,26 +405,27 @@ sub l1_check_action {
         $STATS->{stamina} += 15;
         delete $possible_options->{'drink-water'};
         delete $possible_options->{'splash-face'};
-        delete $INVENTORY->{water};
+        delete $SAVE->{inventory}{water};
         &drink_water();
     }
 
     if ($action eq 'splash-face') {
+        $STATS->{health} -= 5;
         $STATS->{stamina} += 5;
         $STATS->{vision} += 10;
         delete $possible_options->{'drink-water'};
         delete $possible_options->{'splash-face'};
-        delete $INVENTORY->{water};
+        delete $SAVE->{inventory}{water};
         &splash_face();
     }
 
     if ($action eq 'throw-chain') {
-        $possible_options->{'climb-up'} = 1;
+        $possible_options->{'climb-out'} = 1;
         delete $possible_options->{'throw-chain'};
         &throw_chain();
     }
 
-    if ($action eq 'climb-up') {
+    if ($action eq 'climb-out') {
         if ($STATS->{stamina} < 15) {
             print <<~EOF;
             ---
@@ -384,7 +436,7 @@ sub l1_check_action {
         }
         $STATS->{stamina} -= 15;
         $STATS->{health} -= 15;
-        &climb_up();
+        &climb_out();
         return 0;
     }
     return 1;
@@ -412,7 +464,10 @@ sub level_one {
     ---
     EOF
 
-    my $possible_options = {'feel-around' => 1, 'cry' => 1, 'quit' => 1};
+    # In case there's already a game with set of options saved.
+    unless ($SAVE->{possible_options}) {
+        $SAVE->{possible_options} = {'wait' => 1, 'feel-around' => 1, 'cry' => 1, 'save' => 1, 'quit' => 1};
+    }
     my $in_hole = 1;
     while ($in_hole) {
         print <<~EOF;
@@ -424,22 +479,41 @@ sub level_one {
         if ($STATS->{health} <= 0) {
             print <<~EOF;
             ---
-            You die in a hole.
+            You died in a hole.
 
             Game Over!
             ---
             EOF
             exit;
         }
-        $in_hole = &l1_check_action(&get_action($possible_options), $possible_options);
+        $in_hole = &l1_check_action(&get_action($SAVE->{possible_options}), $SAVE->{possible_options});
+        if ($STATS->{stamina} < 15) {
+            delete $SAVE->{possible_options}{'jump-up'};
+        } else {
+            $SAVE->{possible_options}{'jump-up'} = 1;
+        }
     }
     print <<~EOF;
     ---
     Level 1 Complete!
 
     Congradulations on not dying in a hole!
+
+    ## Final Stats
+    ## - Health: $STATS->{health}
+    ## - Stamina: $STATS->{stamina}
+    ## - Vision: $STATS->{vision}
     ---
     EOF
+    $SAVE->{level} = 2;
+    &save_game();
 }
 
 
+sub level_two {
+    print <<~EOF;
+    ---
+    Level two not started yet!
+    ---
+    EOF
+}
