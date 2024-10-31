@@ -3,6 +3,36 @@ package CaesarCipher;
 use warnings;
 use strict;
 
+=head1 NAME
+
+CaesarCipher - Library for encoding & decoding Caesar Ciphered ASCII text.
+
+=head1 SYNOPSIS
+
+    my $cipher = CaesarCipher->new({shift_index => 6, message => 'your message'});
+
+    my $encoded_msg = $cipher->encode_msg();
+
+    my $decoded_msg = $cipher->decode_msg();
+
+=head1 DESCRIPTION
+
+This library provides an Object Oriented interface for creating and
+manipulating CaesarCipher objects.
+
+The Caesar Cipher is a classic example of a shift cipher, whereby a message is
+encoded by shifting each of its character's index along the alphabet by some
+value. For example, the message "ABC" with a shift of 1 becomes "BCD" etc.
+Decoding a message is as simple as providing the right shift value and shifting
+the message in the opposite direction.
+
+The purpose of this module is help its author learn more about object oriented
+programming in Perl. This is merely a demonstration project and should not be
+used in production or toward any productive ends! See this modules accompanying
+`caesar_cipher.pl` for more information about example usage.
+
+=cut
+
 # Its perl, I gotta use hashmaps ;)
 my %NUM_TO_ALPHA;
 @NUM_TO_ALPHA{0 .. 25} = ('a' .. 'z');
