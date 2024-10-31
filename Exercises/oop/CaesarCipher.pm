@@ -92,7 +92,6 @@ sub _shift_msg {
         # Enable alphabet wrap around.
         if ($shift_index > 25 || $shift_index < 0) {
             $shift_index = $shift_index % 26;
-            $shift_index = abs $shift_index;
         }
 
         push @shifted_msg, $NUM_TO_ALPHA{$shift_index};
